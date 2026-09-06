@@ -7,20 +7,38 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Запуск готового и оптимизированного экшена для сборки Buildozer
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
         with:
-          workdir: .
-          buildozer_version: stable
+          distribution: 'temurin'
+          java-version: '17'
 
-      # Сохранение итогового APK файла в архив на странице проекта
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Android SDK/NDK system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libsqlite3-dev gperf libgdbm-dev libffi-dev double-conversion-dev liblld-dev
+
+      - name: Install Pip Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython virtualenv
+
+      - name: Build APK with Buildozer
+        run: |
+          # Автоматически соглашаемся с лицензиями и запускаем компиляцию
+          yes y | buildozer -v android debug
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
