@@ -24,10 +24,11 @@ jobs:
         with:
           python-version: '3.10'
 
+      # Упрощенная и безопасная установка зависимостей РЛС
       - name: Install Android SDK/NDK system dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libsqlite3-dev gperf libgdbm-dev libffi-dev double-conversion-dev liblld-dev
+          sudo apt-get update || true
+          sudo apt-get install -y lld libssl-dev libffi-dev
 
       - name: Install Pip Dependencies
         run: |
