@@ -24,7 +24,6 @@ jobs:
         with:
           python-version: '3.10'
 
-      # Упрощенная и безопасная установка зависимостей РЛС
       - name: Install Android SDK/NDK system dependencies
         run: |
           sudo apt-get update || true
@@ -34,6 +33,32 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install buildozer cython virtualenv
+
+      # НОВЫЙ ШАГ: Принудительное скачивание и обход блокировки скачивания библиотек
+      - name: Pre-cache problematic downloads (freetype and png)
+        run: |
+          # 1. Скачиваем библиотеки из надежного зеркала SourceForge
+          wget -U "Mozilla/5.0" -O freetype-2.14.1.tar.gz https://downloads.sourceforge.net/project/freetype/freetype2/2.14.1/freetype-2.14.1.tar.gz
+          wget -U "Mozilla/5.0" -O libpng-1.6.40.tar.gz https://downloads.sourceforge.net/project/libpng/libpng16/1.6.40/libpng-1.6.40.tar.gz
+
+          # 2. Создаем папки кэша во внутреннем окружении бегуна GitHub
+          mkdir -p /home/runner/.buildozer/android/packages/freetype
+          mkdir -p /home/runner/.buildozer/android/packages/png
+          mkdir -p /home/runner/.local/share/python-for-android/packages/freetype
+          mkdir -p /home/runner/.local/share/python-for-android/packages/png
+          mkdir -p ./.buildozer/android/platform/build-arm64-v8a_armeabi-v7a/packages/freetype
+          mkdir -p ./.buildozer/android/platform/build-arm64-v8a_armeabi-v7a/packages/png
+
+          # 3. Раскладываем файлы по всем путям кэша
+          cp freetype-2.14.1.tar.gz /home/runner/.buildozer/android/packages/freetype/
+          cp freetype-2.14.1.tar.gz /home/runner/.local/share/python-for-android/packages/freetype/
+          cp freetype-2.14.1.tar.gz ./.buildozer/android/platform/build-arm64-v8a_armeabi-v7a/packages/freetype/
+
+          cp libpng-1.6.40.tar.gz /home/runner/.buildozer/android/packages/png/
+          cp libpng-1.6.40.tar.gz /home/runner/.local/share/python-for-android/packages/png/
+          cp libpng-1.6.40.tar.gz ./.buildozer/android/platform/build-arm64-v8a_armeabi-v7a/packages/png/
+          
+          print "Кэширование для обхода блокировок успешно выполнено!"
 
       - name: Build APK with Buildozer
         run: |
