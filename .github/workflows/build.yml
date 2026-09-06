@@ -1,0 +1,28 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Запуск готового и оптимизированного экшена для сборки Buildozer
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        with:
+          workdir: .
+          buildozer_version: stable
+
+      # Сохранение итогового APK файла в архив на странице проекта
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RadarCalc-APK
+          path: bin/*.apk
